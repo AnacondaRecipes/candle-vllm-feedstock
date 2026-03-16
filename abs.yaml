@@ -1,0 +1,7 @@
+# the conda-build parameters to use
+build_parameters:
+  - "--suppress-variables"
+  - "--error-overlinking"
+
+# Rust compilation + CUDA kernel compilation (30+ .cu files) is very slow
+task_timeout: 25200  # 7 hours
