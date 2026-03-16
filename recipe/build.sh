@@ -79,6 +79,7 @@ cudarc = { path = "VENDOR_DIR_PLACEHOLDER/cudarc" }
 candle-core = { path = "VENDOR_DIR_PLACEHOLDER/candle/candle-core" }
 candle-nn = { path = "VENDOR_DIR_PLACEHOLDER/candle/candle-nn" }
 candle-kernels = { path = "VENDOR_DIR_PLACEHOLDER/candle/candle-kernels" }
+candle-metal-kernels = { path = "VENDOR_DIR_PLACEHOLDER/candle/candle-metal-kernels" }
 PATCHEOF
 
 # Replace placeholder with actual vendor path
@@ -141,6 +142,9 @@ if [[ "${gpu_variant}" == cuda* ]]; then
   # Library search paths
   export LIBRARY_PATH="${PREFIX}/lib:${LIBRARY_PATH:-}"
   export LD_LIBRARY_PATH="${PREFIX}/lib:${LD_LIBRARY_PATH:-}"
+
+elif [[ "${gpu_variant}" == "metal" ]]; then
+  CARGO_FEATURES="metal,accelerate"
 fi
 
 # ============================================================================

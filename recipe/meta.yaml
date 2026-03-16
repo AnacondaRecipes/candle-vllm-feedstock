@@ -46,12 +46,12 @@ source:
     folder: vendor/flashinfer  # [(gpu_variant or "").startswith("cuda")]
 
 build:
-  number: {{ build_number + 100 }}   # [(gpu_variant or "").startswith("cuda")]
-  number: {{ build_number }}          # [not (gpu_variant or "").startswith("cuda")]
+  number: {{ build_number + 100 }}   # [(gpu_variant or "").startswith("cuda") or gpu_variant == "metal"]
+  number: {{ build_number }}          # [not ((gpu_variant or "").startswith("cuda") or gpu_variant == "metal")]
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [(gpu_variant or "").startswith("cuda")]
-  string: cpu_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [not (gpu_variant or "").startswith("cuda")]
+  string: mps_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [gpu_variant == "metal"]
+  string: cpu_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [not ((gpu_variant or "").startswith("cuda") or gpu_variant == "metal")]
   skip: true  # [win]
-  skip: true  # [osx]
   missing_dso_whitelist:
     - "**/libcuda.so*"       # [linux]
 
@@ -83,9 +83,9 @@ requirements:
 
 test:
   commands:
-    - candle-vllm --help                           # [not (gpu_variant or "").startswith("cuda")]
-    # CUDA variant: --help may probe GPU; verify binary exists instead
-    - test -f $PREFIX/bin/candle-vllm              # [(gpu_variant or "").startswith("cuda")]
+    - candle-vllm --help                           # [gpu_variant == "none"]
+    # GPU variants: --help may probe GPU; verify binary exists instead
+    - test -f $PREFIX/bin/candle-vllm              # [(gpu_variant or "").startswith("cuda") or gpu_variant == "metal"]
 
 about:
   home: https://github.com/EricLBuehler/candle-vllm
