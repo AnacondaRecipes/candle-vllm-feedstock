@@ -1,5 +1,5 @@
 # GPU variant configuration for candle-vllm
-# CUDA 12.8 + 13.1 on Linux, Metal on macOS
+# CUDA 12.8 + 13.0 on Linux (cudarc fork supports up to 13.0), Metal on macOS
 # No GCC pinning needed — CUDA 12.8+ supports GCC 14
 
 gpu_variant:
@@ -11,7 +11,7 @@ gpu_variant:
 cuda_compiler_version:         # [linux]
   - none                       # [linux]
   - 12.8                       # [linux]
-  - 13.1                       # [linux]
+  - 13.0                       # [linux]
 
 # Metal builds require MTLBuffer.gpuAddress (macOS 13.0+)
 # Use SDK 14.5 like llama.cpp/whisper.cpp for all macOS builds

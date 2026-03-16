@@ -143,6 +143,10 @@ if [[ "${gpu_variant}" == cuda* ]]; then
   export LIBRARY_PATH="${PREFIX}/lib:${LIBRARY_PATH:-}"
   export LD_LIBRARY_PATH="${PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 
+  # CUDA kernels (attention-rs) use C++ exceptions (__cxa_throw, std::runtime_error)
+  # which require libstdc++. Rust linker doesn't link it by default.
+  export RUSTFLAGS="${RUSTFLAGS:-} -C link-arg=-lstdc++"
+
 elif [[ "${gpu_variant}" == "metal" ]]; then
   CARGO_FEATURES="metal,accelerate"
 fi
