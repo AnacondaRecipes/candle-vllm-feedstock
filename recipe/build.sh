@@ -29,6 +29,10 @@ cd "${MAIN_SRC}"
 # of #[cfg(feature = "metal")], causing CPU builds on Linux to fail.
 patch -p1 -d "${VENDOR_DIR}/attention-rs" < "${RECIPE_DIR}/patches/attention-rs-fix-metal-cfg-gate.patch"
 
+# Fix candle-vllm: FusedRope GPU calls not gated, causing CPU builds to fail
+# with "apply_inplace not found". Gate import + call behind cfg(cuda|metal).
+patch -p1 -d "${MAIN_SRC}" < "${RECIPE_DIR}/patches/candle-vllm-fix-cpu-fused-rope.patch"
+
 # ============================================================================
 # Step 1: Patch Cargo.toml — replace git deps with local vendor paths
 # ============================================================================
