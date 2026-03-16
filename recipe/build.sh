@@ -22,6 +22,14 @@ MAIN_SRC="${SRC_DIR}/candle-vllm-src"
 cd "${MAIN_SRC}"
 
 # ============================================================================
+# Step 0: Patch vendored sources
+# ============================================================================
+
+# Fix attention-rs: Metal code gated behind #[cfg(not(feature = "cuda"))] instead
+# of #[cfg(feature = "metal")], causing CPU builds on Linux to fail.
+patch -p1 -d "${VENDOR_DIR}/attention-rs" < "${RECIPE_DIR}/patches/attention-rs-fix-metal-cfg-gate.patch"
+
+# ============================================================================
 # Step 1: Patch Cargo.toml — replace git deps with local vendor paths
 # ============================================================================
 
