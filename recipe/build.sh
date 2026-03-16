@@ -109,6 +109,18 @@ if [[ "${gpu_variant}" == cuda* ]]; then
   export CUDA_COMPUTE_CAP=${CUDA_COMPUTE_CAP:-80}
 
   # CUDA paths for cudarc/nvcc discovery
+  # cuda-driver-dev installs cuda.h to targets/x86_64-linux/include/, not include/
+  # Symlink so cudarc's build.rs finds $CUDA_ROOT/include/cuda.h
+  if [ -d "${PREFIX}/targets" ]; then
+    for f in "${PREFIX}"/targets/*/include/*.h; do
+      dir=$(dirname "$f")
+      base=$(basename "$f")
+      if [ ! -f "${PREFIX}/include/${base}" ]; then
+        ln -sf "$f" "${PREFIX}/include/${base}"
+      fi
+    done
+  fi
+
   export CUDA_ROOT="${PREFIX}"
   export CUDA_PATH="${PREFIX}"
 
