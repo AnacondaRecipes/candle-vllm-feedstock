@@ -1,31 +1,18 @@
 # CUDA variant configuration for candle-vllm
-# cuda-nvcc-impl 12.4 requires gcc <13, so pin GCC 11.2.0 for CUDA variant
-# (same pattern as catboost-feedstock)
+# CUDA 12.8 + 13.1 only (skip 13.0 — 13.1 is backward-compatible via cuda-compat)
+# No GCC pinning needed — CUDA 12.8+ supports GCC 14
 
 gpu_variant:
   - none
   - cuda-12    # [linux]
+  - cuda-13    # [linux]
 
 cuda_compiler_version:         # [linux]
   - none                       # [linux]
-  - 12.4                       # [linux]
-
-cuda_compiler:                 # [linux]
-  - cuda-nvcc                  # [linux]
-
-# GCC 11.2.0 for CUDA variant: cuda-nvcc-impl 12.4 requires gcc_impl <13
-# GCC 14.3.0 for CPU variant: matches aggregate CBC default
-c_compiler_version:            # [linux]
-  - 14.3.0                     # [linux]
-  - 11.2.0                     # [linux]
-
-cxx_compiler_version:          # [linux]
-  - 14.3.0                     # [linux]
-  - 11.2.0                     # [linux]
+  - 12.8                       # [linux]
+  - 13.1                       # [linux]
 
 zip_keys:                      # [linux]
   -                            # [linux]
     - gpu_variant              # [linux]
     - cuda_compiler_version    # [linux]
-    - c_compiler_version       # [linux]
-    - cxx_compiler_version     # [linux]

@@ -112,8 +112,7 @@ if [[ "${gpu_variant}" == cuda* ]]; then
   export CUDA_ROOT="${PREFIX}"
   export CUDA_PATH="${PREFIX}"
 
-  # nvcc uses GCC 11.2.0 as host compiler (pinned in conda_build_config.yaml
-  # because cuda-nvcc-impl 12.4 requires gcc <13)
+  # CUDA 12.8+/13.x support GCC 14 — no special nvcc host compiler needed
 
   # Library search paths
   export LIBRARY_PATH="${PREFIX}/lib:${LIBRARY_PATH:-}"
