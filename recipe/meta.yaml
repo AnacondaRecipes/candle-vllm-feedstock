@@ -71,6 +71,7 @@ requirements:
     - cuda-cudart-dev                                      # [(gpu_variant or "").startswith("cuda")]
     - cuda-nvrtc-dev                                       # [(gpu_variant or "").startswith("cuda")]
     - libcublas-dev                                        # [(gpu_variant or "").startswith("cuda")]
+    - libcurand-dev                                        # [(gpu_variant or "").startswith("cuda")]
     - nccl {{ nccl }}                                       # [(gpu_variant or "").startswith("cuda")]
   run:
     - {{ pin_compatible('cuda-version', max_pin='x.x') }}  # [(gpu_variant or "").startswith("cuda")]
