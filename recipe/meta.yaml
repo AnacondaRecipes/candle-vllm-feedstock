@@ -53,7 +53,6 @@ build:
   skip: true  # [win]
   missing_dso_whitelist:
     - "**/libcuda.so*"       # [linux]
-  script: build.sh
 
 requirements:
   build:
