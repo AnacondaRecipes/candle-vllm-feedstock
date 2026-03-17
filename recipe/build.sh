@@ -87,30 +87,7 @@ sed -i.bak "s|VENDOR_DIR_PLACEHOLDER|${VENDOR_DIR}|g" Cargo.toml
 rm -f Cargo.toml.bak
 
 # ============================================================================
-# Step 3: Pre-populate cudaforge cache for flashinfer (CUDA variant only)
-# ============================================================================
-
-if [[ "${gpu_variant}" == cuda* ]]; then
-  # attention-rs uses the cudaforge crate which fetches flashinfer via git clone.
-  # cudaforge caches repos at $CUDAFORGE_HOME/git/checkouts/{name}-{commit_prefix16}
-  # Pre-populate cache to avoid network access during build.
-
-  FLASHINFER_COMMIT="3bffdb76eef5fec462254dde67a7de0c4bcb9905"
-  FLASHINFER_PREFIX="${FLASHINFER_COMMIT:0:16}"
-
-  export CUDAFORGE_HOME="${SRC_DIR}/.cudaforge"
-  CACHE_DIR="${CUDAFORGE_HOME}/git/checkouts/flashinfer-${FLASHINFER_PREFIX}"
-  mkdir -p "${CACHE_DIR}"
-
-  # Copy vendored flashinfer into the cache location
-  cp -a "${VENDOR_DIR}/flashinfer/." "${CACHE_DIR}/"
-
-  # Initialize as git repo — cudaforge checks git metadata
-  (cd "${CACHE_DIR}" && git init && git add -A && git commit -m "vendored" --allow-empty) 2>/dev/null || true
-fi
-
-# ============================================================================
-# Step 4: Configure build features based on variant
+# Step 3: Configure build features based on variant
 # ============================================================================
 
 CARGO_FEATURES=""
@@ -118,7 +95,8 @@ CARGO_FEATURES=""
 if [[ "${gpu_variant}" == cuda* ]]; then
   CARGO_FEATURES="cuda,nccl,graph"
 
-  # SM80 = Ampere (A100, A10G, A30) — good default for production
+  # SM80 = Ampere (A100, A10G, A30) — safe default covering most production GPUs.
+  # Users with Hopper (SM90) or newer can override via CUDA_COMPUTE_CAP env var.
   export CUDA_COMPUTE_CAP=${CUDA_COMPUTE_CAP:-80}
 
   # CUDA paths for cudarc/nvcc discovery

@@ -40,11 +40,6 @@ source:
     sha256: e16f2081c50434dd8883576c612ae4d6b79e88aba0992ede25aceb021e85d6f1
     folder: vendor/rustchatui
 
-  # [6] guoqingbao/flashinfer (headers for attention-rs CUDA kernels, CUDA only)
-  - url: https://github.com/guoqingbao/flashinfer/archive/3bffdb76eef5fec462254dde67a7de0c4bcb9905.tar.gz  # [(gpu_variant or "").startswith("cuda")]
-    sha256: dbc00381ebd11ac3800a783a1ddf87e6314ce5a4cbd783454ca440dcfbb83450  # [(gpu_variant or "").startswith("cuda")]
-    folder: vendor/flashinfer  # [(gpu_variant or "").startswith("cuda")]
-
 build:
   number: {{ build_number + 100 }}   # [(gpu_variant or "").startswith("cuda") or gpu_variant == "metal"]
   number: {{ build_number }}          # [not ((gpu_variant or "").startswith("cuda") or gpu_variant == "metal")]
@@ -77,9 +72,7 @@ requirements:
   run:
     - {{ pin_compatible('cuda-version', max_pin='x.x') }}  # [(gpu_variant or "").startswith("cuda")]
     - __cuda                                               # [(gpu_variant or "").startswith("cuda")]
-    - cuda-cudart                                          # [(gpu_variant or "").startswith("cuda")]
-    - libcublas                                            # [(gpu_variant or "").startswith("cuda")]
-    # nccl and openssl have run_exports — auto-added from host
+    # cuda-cudart, libcublas, libcurand, nccl, openssl auto-added via run_exports from host
 
 test:
   commands:
