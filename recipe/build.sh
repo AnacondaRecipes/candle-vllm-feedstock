@@ -13,7 +13,6 @@ set -euxo pipefail
 #                → range-checked, rustchatui (git-only crates)
 #   candle-core → cudarc (guoqingbao/cudarc fork, via workspace)
 #   attention-rs → cudarc (guoqingbao/cudarc fork)
-#                → flashinfer (fetched at build time by cudaforge crate)
 # ============================================================================
 
 VENDOR_DIR="${SRC_DIR}/vendor"
@@ -104,7 +103,6 @@ if [[ "${gpu_variant}" == cuda* ]]; then
   # Symlink so cudarc's build.rs finds $CUDA_ROOT/include/cuda.h
   if [ -d "${PREFIX}/targets" ]; then
     for f in "${PREFIX}"/targets/*/include/*.h; do
-      dir=$(dirname "$f")
       base=$(basename "$f")
       if [ ! -f "${PREFIX}/include/${base}" ]; then
         ln -sf "$f" "${PREFIX}/include/${base}"
@@ -130,14 +128,14 @@ elif [[ "${gpu_variant}" == "metal" ]]; then
 fi
 
 # ============================================================================
-# Step 5: Rust build configuration
+# Step 4: Rust build configuration
 # ============================================================================
 
 export CARGO_PROFILE_RELEASE_STRIP=symbols
 export CARGO_PROFILE_RELEASE_LTO=fat
 
 # macOS: reserve space for conda rpath fixup
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ "${target_platform}" == osx-* ]]; then
   export RUSTFLAGS="${RUSTFLAGS:-} -C link-arg=-Wl,-headerpad_max_install_names"
 fi
 
@@ -150,7 +148,7 @@ export OPENSSL_LIB_DIR="${PREFIX}/lib"
 export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
 # ============================================================================
-# Step 6: Build and install
+# Step 5: Build and install
 # ============================================================================
 
 # Note: no --locked because upstream has no Cargo.lock
