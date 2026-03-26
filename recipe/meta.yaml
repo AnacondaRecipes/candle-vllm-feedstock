@@ -14,6 +14,9 @@ source:
   - url: https://github.com/EricLBuehler/candle-vllm/archive/{{ commit }}.tar.gz
     sha256: 56cda8f3b1ddb31486e94ab448d937b26b9fb557604bab343eafda9f6552e36d
     folder: candle-vllm-src
+    patches:
+      # Gate FusedRope import/call behind cfg(cuda|metal) — CPU builds lack these methods
+      - patches/candle-vllm-fix-cpu-fused-rope.patch
 
   # [1] guoqingbao/candle fork (candle-core, candle-nn v0.8.3)
   - url: https://github.com/guoqingbao/candle/archive/5bed038b7e3065de82c8260b67411ac70bb1aed9.tar.gz
@@ -24,6 +27,9 @@ source:
   - url: https://github.com/guoqingbao/attention.rs/archive/c5f0de5002b980d28a5ff0448c9f0947e2c07b1c.tar.gz
     sha256: eb93b4ee240cc89addba603fbdd5f6e0b49aaf874becd603626986e4c7ee16d6
     folder: vendor/attention-rs
+    patches:
+      # Fix Metal cfg gate: #[cfg(not(feature = "cuda"))] → #[cfg(feature = "metal")]
+      - patches/attention-rs-fix-metal-cfg-gate.patch
 
   # [3] guoqingbao/cudarc fork (v0.14.0)
   - url: https://github.com/guoqingbao/cudarc/archive/bfb8f27fbb4610c4eb4393c58c7555da378dee46.tar.gz
@@ -58,6 +64,7 @@ requirements:
     - {{ stdlib('c') }}
     - {{ compiler('cuda') }}                               # [(gpu_variant or "").startswith("cuda")]
     - cargo-auditable
+    - cargo-bundle-licenses
     - pkg-config
   host:
     - openssl {{ openssl }}
@@ -84,7 +91,9 @@ about:
   home: https://github.com/EricLBuehler/candle-vllm
   license: MIT
   license_family: MIT
-  license_file: candle-vllm-src/LICENSE
+  license_file:
+    - candle-vllm-src/LICENSE
+    - THIRDPARTY.yml
   summary: Efficient platform for inference and serving local LLMs with an OpenAI compatible API server
   description: |
     Candle-vLLM is a Rust-based model runner built on the HuggingFace candle ML framework.
