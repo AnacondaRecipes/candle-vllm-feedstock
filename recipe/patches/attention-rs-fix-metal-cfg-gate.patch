@@ -1,0 +1,74 @@
+--- a/src/fused_rope.rs
++++ b/src/fused_rope.rs
+@@ -114,7 +114,7 @@ fn resolve_rope_layout(q: &Tensor, k: &T
+     }
+ }
+ 
+-#[cfg(not(feature = "cuda"))]
++#[cfg(feature = "metal")]
+ fn launch_fused_rope_metal(
+     q: &Tensor,
+     k: &Tensor,
+@@ -884,7 +884,7 @@ impl FusedRope {
+     // ========================================================================
+ 
+     /// Apply fused rotary embedding in-place (Metal version)
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     #[allow(unused)]
+     pub fn apply_inplace(
+         q: &Tensor,
+@@ -908,7 +908,7 @@ impl FusedRope {
+ 
+     /// Apply fused rotary embedding in-place to only the leading `rotary_dim`
+     /// channels of Q/K tensors on non-CUDA backends.
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply_inplace_partial(
+         q: &Tensor,
+         k: &Tensor,
+@@ -922,7 +922,7 @@ impl FusedRope {
+     }
+ 
+     /// Apply fused rotary embedding (Metal version) - returns new tensors
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply(
+         q: &Tensor,
+         k: &Tensor,
+@@ -939,7 +939,7 @@ impl FusedRope {
+     }
+ 
+     /// Convenience: non-interleaved RoPE (Metal)
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply_rope(
+         q: &Tensor,
+         k: &Tensor,
+@@ -951,7 +951,7 @@ impl FusedRope {
+     }
+ 
+     /// Convenience: interleaved RoPE (Metal)
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply_rope_i(
+         q: &Tensor,
+         k: &Tensor,
+@@ -963,7 +963,7 @@ impl FusedRope {
+     }
+ 
+     /// Convenience: non-interleaved RoPE in-place (Metal)
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply_rope_inplace(
+         q: &Tensor,
+         k: &Tensor,
+@@ -975,7 +975,7 @@ impl FusedRope {
+     }
+ 
+     /// Convenience: interleaved RoPE in-place (Metal)
+-    #[cfg(not(feature = "cuda"))]
++    #[cfg(feature = "metal")]
+     pub fn apply_rope_i_inplace(
+         q: &Tensor,
+         k: &Tensor,

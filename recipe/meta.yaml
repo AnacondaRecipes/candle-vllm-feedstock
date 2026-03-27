@@ -1,0 +1,109 @@
+{% set name = "candle-vllm" %}
+{% set version = "0.5.6" %}
+# No upstream releases; pinned to commit d8e7e16 (2026-03-16)
+{% set commit = "d8e7e1699935a2d5dd1ef5fcb41925069ad8cd14" %}
+
+{% set build_number = 0 %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  # [0] Main candle-vllm source
+  - url: https://github.com/EricLBuehler/candle-vllm/archive/{{ commit }}.tar.gz
+    sha256: 56cda8f3b1ddb31486e94ab448d937b26b9fb557604bab343eafda9f6552e36d
+    folder: candle-vllm-src
+    patches:
+      # Gate FusedRope import/call behind cfg(cuda|metal) — CPU builds lack these methods
+      - patches/candle-vllm-fix-cpu-fused-rope.patch
+
+  # [1] guoqingbao/candle fork (candle-core, candle-nn v0.8.3)
+  - url: https://github.com/guoqingbao/candle/archive/5bed038b7e3065de82c8260b67411ac70bb1aed9.tar.gz
+    sha256: 68c997180e8682fd91dbacb16282bb9ae3a95c49f2248eec312765a1b0a95b44
+    folder: vendor/candle
+
+  # [2] guoqingbao/attention.rs (v0.4.3)
+  - url: https://github.com/guoqingbao/attention.rs/archive/c5f0de5002b980d28a5ff0448c9f0947e2c07b1c.tar.gz
+    sha256: eb93b4ee240cc89addba603fbdd5f6e0b49aaf874becd603626986e4c7ee16d6
+    folder: vendor/attention-rs
+    patches:
+      # Fix Metal cfg gate: #[cfg(not(feature = "cuda"))] → #[cfg(feature = "metal")]
+      - patches/attention-rs-fix-metal-cfg-gate.patch
+
+  # [3] guoqingbao/cudarc fork (v0.14.0)
+  - url: https://github.com/guoqingbao/cudarc/archive/bfb8f27fbb4610c4eb4393c58c7555da378dee46.tar.gz
+    sha256: 263965f5a7d207f956ca74acfd93b4fac04cb355457a033560fd3bd8c4285cd6
+    folder: vendor/cudarc
+
+  # [4] EricLBuehler/range-checked
+  - url: https://github.com/EricLBuehler/range-checked/archive/655349cc093fcd4965f35b25de394a24ff4b0c7b.tar.gz
+    sha256: 593b389b4df156635fc1bd1d5bd0375cc498541f4c2b80e1fd98d65cf976bdc9
+    folder: vendor/range-checked
+
+  # [5] guoqingbao/rustchatui
+  - url: https://github.com/guoqingbao/rustchatui/archive/68caad9153d0b68401c585fa02c04fd4de177b37.tar.gz
+    sha256: e16f2081c50434dd8883576c612ae4d6b79e88aba0992ede25aceb021e85d6f1
+    folder: vendor/rustchatui
+
+build:
+  number: {{ build_number + 100 }}   # [(gpu_variant or "").startswith("cuda") or gpu_variant == "metal"]
+  number: {{ build_number }}          # [not ((gpu_variant or "").startswith("cuda") or gpu_variant == "metal")]
+  string: cuda{{ cuda_compiler_version | replace('.', '') }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [(gpu_variant or "").startswith("cuda")]
+  string: mps_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [gpu_variant == "metal"]
+  string: cpu_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}  # [not ((gpu_variant or "").startswith("cuda") or gpu_variant == "metal")]
+  skip: true  # [win]
+  missing_dso_whitelist:
+    - "**/libcuda.so*"       # [linux]
+
+requirements:
+  build:
+    - {{ compiler('rust') }}
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ stdlib('c') }}
+    - {{ compiler('cuda') }}                               # [(gpu_variant or "").startswith("cuda")]
+    - cargo-auditable
+    - cargo-bundle-licenses
+    - pkg-config
+  host:
+    - openssl {{ openssl }}
+    # CUDA libs needed by cudarc (cublas, cublaslt, curand, nvrtc) and attention-rs kernels
+    - cuda-version {{ cuda_compiler_version }}             # [(gpu_variant or "").startswith("cuda")]
+    - cuda-driver-dev                                      # [(gpu_variant or "").startswith("cuda")]
+    - cuda-cudart-dev                                      # [(gpu_variant or "").startswith("cuda")]
+    - cuda-nvrtc-dev                                       # [(gpu_variant or "").startswith("cuda")]
+    - libcublas-dev                                        # [(gpu_variant or "").startswith("cuda")]
+    - libcurand-dev                                        # [(gpu_variant or "").startswith("cuda")]
+    - nccl {{ nccl }}                                       # [(gpu_variant or "").startswith("cuda")]
+  run:
+    - {{ pin_compatible('cuda-version', max_pin='x.x') }}  # [(gpu_variant or "").startswith("cuda")]
+    - __cuda                                               # [(gpu_variant or "").startswith("cuda")]
+    # cuda-cudart, libcublas, libcurand, nccl, openssl auto-added via run_exports from host
+
+test:
+  commands:
+    - candle-vllm --help                           # [gpu_variant == "none"]
+    # GPU variants: --help may probe GPU; verify binary exists instead
+    - test -f $PREFIX/bin/candle-vllm              # [(gpu_variant or "").startswith("cuda") or gpu_variant == "metal"]
+
+about:
+  home: https://github.com/EricLBuehler/candle-vllm
+  license: MIT
+  license_family: MIT
+  license_file:
+    - candle-vllm-src/LICENSE
+    - THIRDPARTY.yml
+  summary: Efficient platform for inference and serving local LLMs with an OpenAI compatible API server
+  description: |
+    Candle-vLLM is a Rust-based model runner built on the HuggingFace candle ML framework.
+    It provides an OpenAI-compatible API server for running inference on large language models
+    with support for CUDA GPU acceleration, multi-GPU (NCCL), paged attention, and continuous
+    batching. It supports a wide range of model architectures including Llama, Mistral, Phi,
+    Qwen, Gemma, and more.
+  doc_url: https://github.com/EricLBuehler/candle-vllm/blob/master/README.md
+  dev_url: https://github.com/EricLBuehler/candle-vllm
+
+extra:
+  recipe-maintainers:
+    - xkong-anaconda
