@@ -1,0 +1,6 @@
+anaconda_config_version: 1
+upstream_sources:
+  - github:
+      identifier: EricLBuehler/candle-vllm
+      from_pattern: ^(\d{8})\.\d{6}$
+      to_pattern: \1
