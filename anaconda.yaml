@@ -1,8 +1,7 @@
 anaconda_config_version: 1
 upstream_sources:
-  - github:
-      identifier: ericlbuehler/candle-vllm
-      use_max_tag: true
-      exclude_regex: (?i)^(?=.*(?:(?<=\d)rc\d*|(?<=\d)dev\d+|(?:^|[-._])(?:alpha|beta|gamma|pre|preview)(?:\d+)?|[-._]rc\d+|(?:^|[-._])dev\d+|(?:\d+\.)+\d+[ab]\d*)).+$
-      from_pattern: ^v?(\d+(?:\.\d+)*.*)$
-      to_pattern: \1
+  # Crate semver from Cargo.toml on master (upstream ships commit pins in-recipe; nvchecker tracks semver signal).
+  # Matches aggregate-duct-tape ``NVCHECKER_OVERRIDE_GITHUB_TO_REGEX`` / distro-db ``github->webpage(regex)``.
+  - webpage:
+      url: https://raw.githubusercontent.com/EricLBuehler/candle-vllm/master/Cargo.toml
+      regex: '(?m)^version\s*=\s*"([^"]+)"\s*$'
